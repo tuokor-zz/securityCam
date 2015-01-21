@@ -6,6 +6,7 @@ import json
 import time
 import pprint
 import simplejson
+import os
 
 import apiclient.http
 from apiclient.discovery import build
@@ -68,9 +69,10 @@ def main():
             print("going to upload:{0}".format(sys.argv[1]))
             try:
                 f = sys.argv[1]
+                name = os.path.split(f)
                 media_body = apiclient.http.MediaFileUpload(f, resumable=True)
                 metadata = {
-                    'title': "snapshot_{0}".format(int(time.time()*1000)),
+                    'title': name[1],  #"snapshot_{0}".format(int(time.time()*1000)),
                     'parents': [
                         {
                             'kind': "drive#parentReference",
@@ -82,10 +84,11 @@ def main():
 
                 new_file = service.files().insert(body=metadata, media_body=media_body).execute()
                 #pprint.pprint(new_file)
-                print("upload successful")
+                print("upload successful, removing file")
+                os.remove(f)
             except errors.HttpError, e:
                 try:
-                    error = simplejson.load(e.content)
+                    error = simplejson.loads(e.content)
                     print("error code: {0}".format(error.get('code')))
                     print("error msg: {0}".format(error.get('message')))
                 except ValueError:
