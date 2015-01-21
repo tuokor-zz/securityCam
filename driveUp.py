@@ -17,7 +17,10 @@
 import httplib2
 import sys
 import json
+import time
+import pprint
 
+import apiclient.http
 from apiclient.discovery import build
 from oauth2client.file import Storage
 from oauth2client.client import AccessTokenRefreshError
@@ -82,18 +85,41 @@ def main():
 
   try:
 
-    # The Calendar API's events().list method returns paginated results, so we
-    # have to execute the request in a paging loop. First, build the
-    # request object. The arguments provided are:
-    #   primary calendar for user
+    folder_id = None
     files = service.files().list(q="title = 'SecurityCam' and mimeType = 'application/vnd.google-apps.folder'").execute()
     if len(files['items']) == 0:
         print("no folder found");
         folder = {'mimeType': "application/vnd.google-apps.folder" , 'title': "SecurityCam"}
         resp = service.files().insert(body=folder).execute()
+        folder_id = resp['id']
         print("folder created {0}".format(resp))
     else:
         print("SecurityCam folder present uploading given file")
+        folder_id = files['items'][0]['id']
+        print("folder id:{0}".format(folder_id))
+        if len(sys.argv) < 2:
+            print("Missing file parameter")
+        else:
+            print("going to upload:{0}".format(sys.argv[1]))
+            try:
+                f = sys.argv[1]
+                media_body = apiclient.http.MediaFileUpload(f,resumable=True)
+                file = {
+                    'title': "snapshot_{0}".format(int(time.time()*1000)),
+                    'parents': [
+                        {
+                            'kind': "drive#parentReference",
+                            'id': folder_id
+                        }
+                    ]
+
+                }
+                new_file = service.files().insert(body=file, media_body=media_body).execute()
+                pprint.pprint(new_file)
+            except IOError:
+                print("unable to open file for uploading")
+
+
     # Loop until all pages have been processed.
 
     #while request != None:
