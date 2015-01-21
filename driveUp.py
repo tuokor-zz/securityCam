@@ -86,8 +86,14 @@ def main():
     # have to execute the request in a paging loop. First, build the
     # request object. The arguments provided are:
     #   primary calendar for user
-    files = service.files().list(q="title contains 'bug'").execute()
-    print files
+    files = service.files().list(q="title = 'SecurityCam' and mimeType = 'application/vnd.google-apps.folder'").execute()
+    if len(files['items']) == 0:
+        print("no folder found");
+        folder = {'mimeType': "application/vnd.google-apps.folder" , 'title': "SecurityCam"}
+        resp = service.files().insert(body=folder).execute()
+        print("folder created {0}".format(resp))
+    else:
+        print("SecurityCam folder present uploading given file")
     # Loop until all pages have been processed.
 
     #while request != None:
