@@ -92,6 +92,9 @@ class DriveUp:
                     except ValueError:
                         print("HTTP statuscode:{0}".format(e.resp.status))
                         print("HTTP reason:{0}".format(e.resp.reason))
+                except:
+                    print("unknown error: {0}".format(sys.exc_info()[0]))
+                    raise
 
         except AccessTokenRefreshError:
             print("access tokens revoked, please re-authenticate")

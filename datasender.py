@@ -36,10 +36,13 @@ class DataSender:
         signal.signal(signal.SIGINT, stop)
         print('datauploader started')
         while self.running or not que.empty():
-            item = que.get(True)
-            print("handling item={0}".format(item))
-            self.driveup.upload(item)
-            que.task_done()
+            try:
+                item = que.get(True)
+                print("handling item={0}".format(item))
+                self.driveup.upload(item)
+                que.task_done()
+            except:
+                print("uploading failed due to exception: {0}".format(sys.exc_info()[0]))
             time.sleep(2)
         print("datauploader process terminating...")
 

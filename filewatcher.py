@@ -12,7 +12,7 @@ Up.start()
 
 class EventHandler(pyinotify.ProcessEvent):
     def process_IN_CLOSE_WRITE(self, event):
-        if ".git" not in event.pathname:
+        if ".git" not in event.pathname and event.pathname.endswith("jpg"):
             print("uploading file {0}".format(event.pathname))
             Up.send(event.pathname)
 
